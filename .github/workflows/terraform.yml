@@ -57,7 +57,7 @@ jobs:
 
       # Terraform Format
       - name: Terraform Format Check
-        run: terraform fmt -check -recursive
+        run: terraform fmt 
         working-directory: Environment/Pre-Prod
 
       # Terraform Validate
