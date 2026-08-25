@@ -1,0 +1,119 @@
+name: Terraform Azure Deployment
+
+on:
+  push:
+    branches:
+      - "feature/**"
+      - main
+
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  # id-token: write
+  contents: read
+
+jobs:
+
+  # ==========================================
+  # TERRAFORM PLAN
+  # Runs on:
+  # 1. feature branches
+  # 2. Pull Requests to main
+  # 3. main after merge
+  # ==========================================
+
+  terraform-plan:
+    name: Terraform Plan
+    runs-on: self-hosted
+
+    steps:
+
+      # Checkout repository code
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Azure Login using service principal
+      - name: Azure Login
+        uses: azure/login@v3
+        with:
+          creds: |
+            {
+              "clientId": "d9ef0cfc-6395-41ac-addd-ab5556663b13",
+              "clientSecret": "17X8Q~2AaI8egqJxTUtliqcbqoUSaph0rFB.ndxm",
+              "tenantId": "2d4d34e6-bb8b-444c-b15b-c522d3cce28a",
+              "subscriptionId": "f2dc6b00-339e-4bbb-8625-7ff34e04e886"
+            }
+
+      # Install Terraform
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      # Terraform Init
+      - name: Terraform Init
+        run: terraform init
+        working-directory: Environment/Pre-Prod
+
+      # Terraform Format
+      - name: Terraform Format Check
+        run: terraform fmt -check -recursive
+        working-directory: Environment/Pre-Prod
+
+      # Terraform Validate
+      - name: Terraform Validate
+        run: terraform validate
+        working-directory: Environment/Pre-Prod
+
+      # Terraform Plan
+      - name: Terraform Plan
+        run: terraform plan
+        working-directory: Environment/Pre-Prod
+
+
+  # ==========================================
+  # TERRAFORM APPL
+  # Runs ONLY on main branch
+  # ==========================================
+
+  terraform-apply:
+    name: Terraform Apply
+    runs-on: ubuntu-latest
+
+    # IMPORTANT:
+    # Apply waits for Plan to finish
+    needs: terraform-plan
+
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+
+      # Checkout repository
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Azure Login using OIDC
+      - name: Azure Login
+        uses: azure/login@v3
+        with:
+          creds: |
+            {
+              "clientId": "d9ef0cfc-6395-41ac-addd-ab5556663b13",
+              "clientSecret": "17X8Q~2AaI8egqJxTUtliqcbqoUSaph0rFB.ndxm",
+              "tenantId": "2d4d34e6-bb8b-444c-b15b-c522d3cce28a",
+              "subscriptionId": "f2dc6b00-339e-4bbb-8625-7ff34e04e886"
+            }
+
+      # Install Terraform
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      # Terraform Init
+      - name: Terraform Init
+        run: terraform init
+        working-directory: Environment/Pre-Prod
+
+      # Terraform Apply
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
+        working-directory: Environment/Pre-Prod
