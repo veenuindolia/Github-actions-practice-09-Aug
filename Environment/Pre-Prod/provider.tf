@@ -10,7 +10,7 @@ terraform {
     resource_group_name  = "sakv-rg"
     storage_account_name = "vnubackendstorage"
     container_name       = "vmbackendcontainer"
-    key                  = "pre-prod-new.tfstate"
+    key                  = "pre-prod-new2.tfstate"
   }
 }
 
