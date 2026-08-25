@@ -46,9 +46,9 @@ jobs:
               "subscriptionId": "f2dc6b00-339e-4bbb-8625-7ff34e04e886"
             }
 
-      # Install Terraform
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+      # # Install Terraform
+      # - name: Setup Terraform
+      #   uses: hashicorp/setup-terraform@v3
 
       # Terraform Init
       - name: Terraform Init
